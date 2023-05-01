@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"strings"
 )
 
@@ -110,6 +111,13 @@ func postData(records []Message) {
 
 func main() {
 
+	cpuProfile, errProf := os.Create("cpu.pprof")
+	check(errProf)
+	pprof.StartCPUProfile(cpuProfile)
+	defer pprof.StopCPUProfile()
+
+	heapProfile, errProf := os.Create("heap.pprof")
+
 	records := make([]Message, 0)
 	// take first command line argument, path
 	pathArg := os.Args[1]
@@ -130,5 +138,5 @@ func main() {
 	})
 	check(err)
 	postData(records)
-
+	pprof.WriteHeapProfile(heapProfile)
 }
