@@ -28,7 +28,7 @@ func main() {
 		w.Write([]byte("hello world"))
 	})
 
-	r.Get("/search/{value}", getSearch)
+	r.Get("/search", getSearch)
 
 	log.Println("Starting up on http://localhost: 3333")
 
@@ -36,7 +36,7 @@ func main() {
 }
 
 func getSearch(w http.ResponseWriter, r *http.Request) {
-	value := chi.URLParam(r, "value")
+	value := r.URL.Query().Get("value")
 
 	base := `{
         "search_type": "match",
