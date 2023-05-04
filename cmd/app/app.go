@@ -45,8 +45,7 @@ func getSearch(w http.ResponseWriter, r *http.Request) {
             "term": "%s"
         },
         "from": 0,
-        "max_results": 10,
-        "_source": ["From", "To"]
+        "max_results": 10
     }`
 	query := fmt.Sprintf(base, value)
 	req, err := http.NewRequest("POST", "http://localhost:4080/api/mails/_search", strings.NewReader(query))
