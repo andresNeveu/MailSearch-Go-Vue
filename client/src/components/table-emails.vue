@@ -22,26 +22,26 @@ const sendIndex = (index) => {
                 <thead class="border-b">
                     <tr class="bg-gray-100">
                         <th class="text-left p-4 font-medium">
-                            Name
+                            Subject
                         </th>
                         <th class="text-left p-4 font-medium">
-                            Email
+                            To
                         </th>
                         <th class="text-left p-4 font-medium">
-                            Role
+                            From
                         </th>
                     </tr>
                 </thead>
                 <tbody v-for="(mail, index) in data" :key="mail.id">
                     <tr class="border-b hover:bg-gray-50" @click="sendIndex(index)">
                         <td class="p-4">
-                            {{ mail.userId }}
+                            {{ mail._source.Subject }}
                         </td>
                         <td class="p-4">
-                            {{ mail.title }}
+                            {{ mail._source.To }}
                         </td>
                         <td class="p-4">
-                            {{ mail.id }}
+                            {{ mail._source.From }}
                         </td>
                     </tr>
                 </tbody>

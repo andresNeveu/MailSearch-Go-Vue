@@ -4,25 +4,25 @@ import TableEmails from "./components/table-emails.vue";
 import DetailsEmail from "./components/details-email.vue";
 const mails = ref([])
 const search = ref('')
-const emailSelect = ref('Ejemplo')
+const emailSelect = ref('')
 
 const loadData = async () => {
-  const response = await fetch("https://jsonplaceholder.typicode.com/posts")
+  const response = await fetch("http://localhost:3333/search?value=" + search.value)
   const data = await response.json()
 
-  mails.value = data.slice(0, 10)
+  mails.value = data.hits.hits
+  console.log(data.hits.hits[0]);
 }
 
-const submit = () => {
-  console.log(search.value);
+const submit = async () => {
+  await loadData()
 }
 
 const handleIndex = (index) => {
-  emailSelect.value = mails.value[index].body
-  console.log(mails.value[index].title);
+  emailSelect.value = mails.value[index]._source.Body
 }
 
-loadData()
+//loadData()
 </script>
 
 <template>
