@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"strings"
+	"sync"
 )
 
 // Struct to format the email
@@ -22,23 +25,46 @@ type Message struct {
 
 func main() {
 
-	records := make([]Message, 0)
+	cpuProfile, errProf := os.Create("cpu.pprof")
+	check(errProf)
+	pprof.StartCPUProfile(cpuProfile)
+	defer pprof.StopCPUProfile()
+
+	heapProfile, errProf := os.Create("heap.pprof")
+	check(errProf)
+
+	var wg sync.WaitGroup
+
 	// take first command line argument, path
 	pathArg := os.Args[1]
 
 	// get directory list
 	innerPath := "maildir"
 	dirPath := filepath.Join(pathArg, innerPath)
-	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		check(err)
-		if !info.IsDir() {
-			record := readEmailFile(path)
-			records = append(records, record)
-		}
-		return nil
-	})
+	files, err := ioutil.ReadDir(dirPath)
 	check(err)
-	postData(records)
+	for _, file := range files {
+		wg.Add(1)
+		subDirPath := filepath.Join(dirPath, file.Name())
+		go func(subDirPath string) {
+			records := make([]Message, 0)
+			defer wg.Done()
+			err := filepath.Walk(subDirPath, func(path string, info os.FileInfo, err error) error {
+				check(err)
+				if !info.IsDir() {
+					record := readEmailFile(path)
+					records = append(records, record)
+				}
+				return nil
+			})
+			check(err)
+			postData(records)
+		}(subDirPath)
+	}
+
+	wg.Wait()
+	pprof.WriteHeapProfile(heapProfile)
+	fmt.Println("Successfull")
 }
 
 // Basic error handling
