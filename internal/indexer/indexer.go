@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime/pprof"
 	"strings"
 	"sync"
 )
@@ -25,13 +23,7 @@ type Message struct {
 
 func main() {
 
-	cpuProfile, errProf := os.Create("cpu.pprof")
-	check(errProf)
-	pprof.StartCPUProfile(cpuProfile)
-	defer pprof.StopCPUProfile()
-
-	heapProfile, errProf := os.Create("heap.pprof")
-	check(errProf)
+	const MAX = 8
 
 	var wg sync.WaitGroup
 
@@ -41,10 +33,13 @@ func main() {
 	// get directory list
 	innerPath := "maildir"
 	dirPath := filepath.Join(pathArg, innerPath)
-	files, err := ioutil.ReadDir(dirPath)
+	files, err := os.ReadDir(dirPath)
 	check(err)
+
+	sem := make(chan int, MAX)
 	for _, file := range files {
 		wg.Add(1)
+		sem <- 1
 		subDirPath := filepath.Join(dirPath, file.Name())
 		go func(subDirPath string) {
 			records := make([]Message, 0)
@@ -59,11 +54,12 @@ func main() {
 			})
 			check(err)
 			postData(records)
+			<-sem
 		}(subDirPath)
 	}
 
 	wg.Wait()
-	pprof.WriteHeapProfile(heapProfile)
+
 	fmt.Println("Successfull")
 }
 
