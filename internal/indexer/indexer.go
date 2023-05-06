@@ -32,7 +32,7 @@ func main() {
 
 	// get directory list
 	innerPath := "maildir"
-	dirPath := filepath.Join(pathArg, innerPath)
+	dirPath := filepath.Join(pathArg, innerPath, "allen-p")
 	files, err := os.ReadDir(dirPath)
 	check(err)
 
@@ -88,30 +88,43 @@ func readEmailFile(path string) Message {
 	textTo := ""
 	textSubjet := ""
 	textBody := ""
-	findBody := false // to find body (after last field)
+	found := make([]bool, 4) // 0 = from, 1 = to, 2 = subject, 3 = x-file
 
 	// get data
 	for scanner.Scan() {
-		if findBody {
-			textBody = textBody + scanner.Text()
+		if found[3] {
+			textBody = textBody + scanner.Text() + "\u000a"
+			continue
 		}
-		if strings.Contains(scanner.Text(), "Subject:") {
-			if textSubjet == "" {
-				textSubjet = scanner.Text()[8:]
-			}
-		}
-		if strings.Contains(scanner.Text(), "To:") {
-			if textTo == "" {
-				textTo = scanner.Text()[4:]
-			}
-		}
-		if strings.Contains(scanner.Text(), "From:") {
-			if textFrom == "" {
+		if !found[0] {
+			if strings.Contains(scanner.Text(), "From:") {
 				textFrom = scanner.Text()[6:]
+				found[0] = true
+				continue
 			}
 		}
-		if strings.Contains(scanner.Text(), "X-FileName:") {
-			findBody = true
+		if !found[1] {
+			if strings.Contains(scanner.Text(), "To:") {
+				textTo = scanner.Text()[4:]
+				found[1] = true
+				continue
+			}
+		}
+		if !found[2] {
+			if strings.Contains(scanner.Text(), "Subject:") {
+				textSubjet = scanner.Text()[8:]
+				found[2] = true
+				continue
+			} else if found[1] {
+				textTo = textTo + scanner.Text()
+				continue
+			}
+		}
+		if !found[3] {
+			if strings.Contains(scanner.Text(), "X-FileName:") {
+				found[3] = true
+				continue
+			}
 		}
 	}
 	check(scanner.Err())
