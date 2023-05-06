@@ -35,6 +35,7 @@ func main() {
 	http.ListenAndServe(":3333", r)
 }
 
+// handle search
 func getSearch(w http.ResponseWriter, r *http.Request) {
 	value := r.URL.Query().Get("value")
 

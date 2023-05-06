@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// Struct to format the email
 type Message struct {
 	From    string
 	To      string
@@ -19,12 +20,35 @@ type Message struct {
 	Body    string
 }
 
+func main() {
+
+	records := make([]Message, 0)
+	// take first command line argument, path
+	pathArg := os.Args[1]
+
+	// get directory list
+	innerPath := "maildir"
+	dirPath := filepath.Join(pathArg, innerPath)
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		check(err)
+		if !info.IsDir() {
+			record := readEmailFile(path)
+			records = append(records, record)
+		}
+		return nil
+	})
+	check(err)
+	postData(records)
+}
+
+// Basic error handling
 func check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
 
+// Read the file to search Subject, To, From, Body of the email
 func readEmailFile(path string) Message {
 
 	// open file
@@ -67,14 +91,15 @@ func readEmailFile(path string) Message {
 		if strings.Contains(scanner.Text(), "X-FileName:") {
 			findBody = true
 		}
-
 	}
 	check(scanner.Err())
+
 	m := Message{From: textFrom, To: textTo, Subject: textSubjet, Body: textBody}
 	return m
 
 }
 
+// Post request to ZincSearch
 func postData(records []Message) {
 
 	// to JSON encode
@@ -88,47 +113,19 @@ func postData(records []Message) {
 	//fmt.Println(dataBody)
 
 	req, err := http.NewRequest("POST", "http://localhost:4080/api/_bulkv2", strings.NewReader(string(dataBody)))
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
+
 	req.SetBasicAuth("admin", "Complexpass#123")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
 
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
+
 	defer resp.Body.Close()
 	log.Println(resp.StatusCode)
 	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(body))
-}
-
-func main() {
-
-	records := make([]Message, 0)
-	// take first command line argument, path
-	pathArg := os.Args[1]
-
-	// get directory list
-	innerPath := "maildir"
-	dirPath := filepath.Join(pathArg, innerPath)
-	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		check(err)
-		if info.IsDir() {
-			//fmt.Printf("dir: %v: name: %s\n", info.IsDir(), path)
-		} else {
-			record := readEmailFile(path)
-			records = append(records, record)
-		}
-
-		return nil
-	})
 	check(err)
-	postData(records)
 
+	log.Println(string(body))
 }
