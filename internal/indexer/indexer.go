@@ -23,8 +23,13 @@ type Message struct {
 
 func main() {
 
+	// Max number of parallel goroutines
 	const MAX = 8
 
+	// control max of parallel goroutines
+	sem := make(chan int, MAX)
+
+	// to wait goroutines
 	var wg sync.WaitGroup
 
 	// take first command line argument, path
@@ -36,14 +41,13 @@ func main() {
 	files, err := os.ReadDir(dirPath)
 	check(err)
 
-	sem := make(chan int, MAX)
 	for _, file := range files {
-		wg.Add(1)
-		sem <- 1
+		wg.Add(1) // add one goroutine for wait
+		sem <- 1  // add one goroutine for control
 		subDirPath := filepath.Join(dirPath, file.Name())
 		go func(subDirPath string) {
 			records := make([]Message, 0)
-			defer wg.Done()
+			defer wg.Done() // remove one goroutine for wait after end
 			err := filepath.Walk(subDirPath, func(path string, info os.FileInfo, err error) error {
 				check(err)
 				if !info.IsDir() {
@@ -54,11 +58,11 @@ func main() {
 			})
 			check(err)
 			postData(records)
-			<-sem
+			<-sem // remove one goroutine for control after end
 		}(subDirPath)
 	}
 
-	wg.Wait()
+	wg.Wait() // wait the goroutines
 
 	fmt.Println("Successfull")
 }
