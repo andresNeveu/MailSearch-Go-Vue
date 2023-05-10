@@ -33,7 +33,6 @@
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
-  --section-gap: 160px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -51,7 +50,7 @@
 }
 
 body {
-  min-height: 100vh;
+  height: auto;
   color: var(--color-text);
   background: var(--color-background);
   transition: color 0.5s, background-color 0.5s;
@@ -63,4 +62,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   white-space: pre-line;
+}
+
+#app {
+  height: 86.5vh;
 }

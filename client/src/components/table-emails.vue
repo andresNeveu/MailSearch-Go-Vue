@@ -9,16 +9,15 @@ defineProps({
 const emit = defineEmits(['onclick'])
 
 const sendIndex = (index) => {
-    console.log(index);
     emit('onclick', index)
 }
 
 </script>
 
 <template>
-    <section class="bg-white flex w-1/2 p-5">
-        <div class="overflow-x-auto border-x border-t ">
-            <table class="table-auto w-full h-full">
+    <section class="bg-white flex w-3/5 p-4">
+        <div class="overflowx-x-auto overflow-y-auto border-x border-t ">
+            <table class="table-auto w-full ">
                 <thead class="border-b">
                     <tr class="bg-gray-100">
                         <th class="text-left p-4 font-medium">

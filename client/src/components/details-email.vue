@@ -1,14 +1,23 @@
 <script setup>
 defineProps({
     detail: {
-        type: String,
+        type: Object,
         required: true
     }
 })
 </script>
 
 <template>
-    <div class="w-1/2 p-5">
-        {{ detail }}
-    </div>
+    <section class="bg-white flex w-2/5 p-4">
+        <div class="overflow-x-auto">
+            <h1>
+                <strong>
+                    {{ detail.title }}
+                </strong>
+            </h1>
+            <p>
+                {{ detail.body }}
+            </p>
+        </div>
+    </section>
 </template>
