@@ -142,8 +142,9 @@ func postData(records []Message) {
 	check(err)
 
 	dataString := string(data)
-	base := `{ "index" : "mails", "records": %s}`
-	dataBody := fmt.Sprintf(base, dataString)
+	base := `{ "index" : "mails", "records":`
+	end := `}`
+	dataBody := base + dataString + end
 
 	//fmt.Println(dataBody)
 
