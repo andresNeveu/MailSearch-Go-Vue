@@ -32,7 +32,7 @@ func main() {
 
 	// get directory list
 	innerPath := "maildir"
-	dirPath := filepath.Join(pathArg, innerPath, "allen-p")
+	dirPath := filepath.Join(pathArg, innerPath)
 	files, err := os.ReadDir(dirPath)
 	check(err)
 
