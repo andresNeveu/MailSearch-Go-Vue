@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"strings"
 	"sync"
 )
@@ -26,6 +27,15 @@ func main() {
 	const MAX = 8
 
 	var wg sync.WaitGroup
+
+	// profiling cpu
+	cpuProfile, errProf := os.Create("cpu.pprof")
+	check(errProf)
+	if err := pprof.StartCPUProfile(cpuProfile); err != nil {
+		check(err)
+	}
+
+	defer pprof.StopCPUProfile()
 
 	// take first command line argument, path
 	pathArg := os.Args[1]
@@ -59,6 +69,12 @@ func main() {
 	}
 
 	wg.Wait()
+
+	heapProfile, errProf := os.Create("heap.pprof")
+	check(errProf)
+	if err := pprof.WriteHeapProfile(heapProfile); err != nil {
+		check(err)
+	}
 
 	fmt.Println("Successfull")
 }
